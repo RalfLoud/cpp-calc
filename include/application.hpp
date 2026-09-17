@@ -1,3 +1,3 @@
 #pragma once
 
-void applicationRun (int argc, char* argv[]);
+void applicationRun(int argc, char* argv[]);
