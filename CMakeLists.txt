@@ -52,6 +52,3 @@ install(TARGETS cpp_calc
     DESTINATION bin
 )
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/help.txt
-    DESTINATION bin
-)

@@ -4,49 +4,70 @@
 #include <math/math.hpp>
 #include <task.hpp>
 
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <iostream>
+namespace
+{
+constexpr const char* helpText = R"(cpp_calc — console calculator
+
+DESCRIPTION
+    Simple command-line calculator for integer numbers.
+
+USAGE
+    cpp_calc -a <number> -b <number> -o <operation>
+
+OPTIONS
+    -a <number>
+        First integer number.
+
+    -b <number>
+        Second integer number.
+        This option is ignored for the factorial operation.
+
+    -o <operation>
+        Operation to perform.
+
+    -h
+        Show this help message.
+
+OPERATIONS
+    add
+        Addition.
+
+    sub
+        Subtraction.
+
+    mul
+        Multiplication.
+
+    div
+        Division.
+
+    pow
+        Raise the first number to the power of the second number.
+
+    fact
+        Calculate the factorial of the first number.
+
+EXAMPLES
+    cpp_calc -a 10 -b 20 -o add
+    cpp_calc -a 20 -b 5 -o div
+    cpp_calc -a 2 -b 10 -o pow
+    cpp_calc -a 5 -o fact
+
+ERRORS
+    Division by zero is not allowed.
+    Negative powers are not allowed.
+    Factorial of a negative number is not defined.
+    Integer overflow is detected and reported.
+    Invalid command-line arguments are rejected.
+)";
+} //namespace
 
 void printHelp()
 {
-    constexpr int pathBufferSize = 1024;
-    char pathBuffer[pathBufferSize];
-
-    const ssize_t length =
-        readlink("/proc/self/exe", pathBuffer, sizeof(pathBuffer) - 1);
-
-    if (length == -1)
-    {
-        std::cout << "Failed to get executable path\n";
-        return;
-    }
-
-    pathBuffer[length] = '\0';
-
-    char* lastSlash = strrchr(pathBuffer, '/');
-
-    if (lastSlash == nullptr)
-    {
-        std::cout << "Incorrect Path \n";
-        return;
-    }
-
-    strcpy(lastSlash + 1, "help.txt");
-
-    FILE* file = fopen(pathBuffer, "r");
-    if (file == nullptr)
-    {
-        std::cout << "Failed to read file \n";
-        return;
-    }
-    constexpr int helpBufferSize = 256;
-    char helpBuffer[helpBufferSize];
-
-    while (fgets(helpBuffer, sizeof(helpBuffer), file) != nullptr)
-    {
-        std::cout << helpBuffer;
-    }
-    fclose(file);
+    puts(helpText);
 }
 
 bool parseHelper(const char* arg, int& number)
@@ -60,7 +81,7 @@ bool parseHelper(const char* arg, int& number)
         return true;
     }
 
-    std::cout << "Incorrect argument value" << "\n";
+    puts("Incorrect argument value");
     return false;
 }
 
@@ -120,7 +141,7 @@ bool makeTask(int argc, char* argv[], Task& task)
                 }
                 else
                 {
-                    std::cout << "Unknown operation" << "\n";
+                    puts("Unknown operation");
                     return false;
                 }
                 break;
@@ -128,19 +149,19 @@ bool makeTask(int argc, char* argv[], Task& task)
                 printHelp();
                 return false;
             default:
-                std::cout << "Unknown parameter, check manual" << "\n";
+                puts("Unknown parameter, check manual");
                 return false;
         }
         option = getopt(argc, argv, "a:b:o:h");
     }
     if (optind != argc)
     {
-        std::cout << "Too many arguments" << "\n";
+        puts("Too many arguments");
         return false;
     }
     if (!hasA || !hasO)
     {
-        std::cout << "Missing operation or first argument\n";
+        puts("Missing operation or first argument");
         return false;
     }
 
@@ -151,7 +172,7 @@ bool makeTask(int argc, char* argv[], Task& task)
 
     if (!hasB)
     {
-        std::cout << "Second argument is required for this operation\n";
+        puts("Second argument is required for this operation");
         return false;
     }
 
@@ -217,19 +238,20 @@ void printResult(const Task& task)
     switch (task.status)
     {
         case math::Status::SUCCESS:
-            std::cout << task.result << "\n";
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+            printf("%d\n", task.result);
             break;
         case math::Status::OVERFLOW:
-            std::cout << "Overflow!" << "\n";
+            puts("Overflow!");
             break;
         case math::Status::DIVISION_BY_ZERO:
-            std::cout << "Division by zero not allowed." << "\n";
+            puts("Division by zero not allowed.");
             break;
         case math::Status::NEGATIVE_POWER:
-            std::cout << "Negative power." << "\n";
+            puts("Negative power.");
             break;
         case math::Status::NEGATIVE_FACTORIAL:
-            std::cout << "Negative factorial." << "\n";
+            puts("Negative factorial.");
             break;
     }
 }
